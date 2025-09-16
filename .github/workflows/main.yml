@@ -1,32 +1,38 @@
-name: Build APK
+name: Build Android APK
 
 on:
   push:
     branches:
-      - main
-  pull_request:
-    branches:
-      - main
+      - main # قم بتغيير هذا إلى الفرع الرئيسي لمشروعك (مثل master أو main)
+  workflow_dispatch: # يسمح بتشغيل السير عمل يدويًا من واجهة GitHub
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest # تشغيل الوظيفة على أحدث نظام تشغيل Ubuntu
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4 # لاستنساخ مستودع GitHub
 
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        distribution: 'temurin'
-        java-version: '17'
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9' # تأكد من تطابق هذا الإصدار مع الذي استخدمته لتطوير تطبيقك ومع flet-build.yaml
 
-    - name: Build APK
-      run: ./gradlew assembleDebug
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flet
+          pip install flet-pack
 
-    - name: Upload APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: app-debug-apk
-        path: app/build/outputs/apk/debug/app-debug.apk
+      - name: Build Android APK
+        run: |
+          flet pack --target android # بناء ملف APK باستخدام flet-pack
+        working-directory: . # تأكد من أن هذا هو المسار إلى جذر مشروع Flet الخاص بك
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Android-APK
+          path: build/DelegateApp/android/app/build/outputs/apk/release/app-release.apk # المسار الافتراضي لملف APK
+          # يرجى التحقق من المسار الفعلي بعد تشغيل flet pack محليًا إذا واجهت مشاكل
